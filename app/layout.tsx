@@ -20,8 +20,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <ThemeProvider font={plusJakartaSans.className}>
-        <NavBar />
-        <div>
+        <div className="hidden sm:block">
+          <NavBar />
+        </div>
+        <div className="flex flex-col flex-1">
           <TopBar />
           {children}
         </div>

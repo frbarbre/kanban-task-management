@@ -1,22 +1,31 @@
-import { useBoardStore } from "@/store";
+import { useBoardStore, useCurrentBoardStore } from "@/store";
 import useStore from "@/store/useStore";
 import { useState } from "react";
 import { useThemeStore } from "@/store";
 import Image from "next/image";
+import { useEffect } from "react";
 interface CreateNewBoardProps {
-  setCreateBoard: (createBoard: boolean) => void;
+  setEditBoard: (editBoard: boolean) => void;
 }
 
-export default function CreateNewBoard({
-  setCreateBoard,
-}: CreateNewBoardProps) {
+export default function EditBoard({ setEditBoard }: CreateNewBoardProps) {
   const boards = useStore(useBoardStore, (state) => state.boards);
-  const addBoard = useBoardStore((state) => state.addBoard);
-  const [boardName, setBoardName] = useState("");
-  const [columns, setColumns] = useState<string[]>([]);
+  const editBoard = useBoardStore((state) => state.editBoard);
   const theme = useStore(useThemeStore, (state) => state.theme);
-  console.log(addBoard);
-  console.log(boards);
+  const currentBoardId = useStore(
+    useCurrentBoardStore,
+    (state) => state.currentBoardId
+  );
+  const currentBoard = boards?.find((board) => board.id === currentBoardId);
+  const [columns, setColumns] = useState<string[]>([]);
+  const [boardName, setBoardName] = useState(currentBoard?.name);
+
+  useEffect(() => {
+    const currentBoardColumns = currentBoard?.columns.map(
+      (column) => column.name
+    );
+    setColumns(currentBoardColumns || []);
+  }, [currentBoard]);
 
   const handleAddColumn = () => {
     setColumns([...columns, ""]);
@@ -33,7 +42,8 @@ export default function CreateNewBoard({
     updatedColumns.splice(index, 1);
     setColumns(updatedColumns);
   };
-  console.log(theme);
+
+  if (!currentBoard) return null;
   return (
     <>
       <div className="fixed bg-black/50 w-[100svw] h-[100svh] top-0 left-0">
@@ -48,13 +58,14 @@ export default function CreateNewBoard({
             height={20}
             alt="cross"
             className="absolute top-[20px] right-[20px] cursor-pointer"
-            onClick={() => setCreateBoard(false)}
+            onClick={() => setEditBoard(false)}
           />
-          <h3 className="font-bold text-[18px]">Add New Board</h3>
+          <h3 className="font-bold text-[18px]">Edit Board</h3>
           <p className="font-bold text-[12px] text-gray-300 pb-2 pt-4">Name</p>
           <input
             type="text"
             placeholder="e.g Web Design"
+            defaultValue={currentBoard?.name}
             onChange={(e) => setBoardName(e.target.value)}
             className={`${
               theme === "light" ? "bg-white" : "bg-gray-500"
@@ -92,16 +103,20 @@ export default function CreateNewBoard({
               + Add New Column
             </p>
           </div>
-          <div className="rounded-[20px] bg-primary w-full text-center h-[40px] items-center flex justify-center mt-6 cursor-pointer">
-            <p
-              className="text-white font-bold text-[13px]"
-              onClick={() => {
-                addBoard(boardName, columns);
-                setCreateBoard(false);
-              }}
-            >
-              Create New Board
-            </p>
+          <div
+            onClick={() => {
+              editBoard(
+                currentBoard?.id,
+                boardName === ""
+                  ? currentBoard.name
+                  : boardName || currentBoard.name,
+                columns
+              );
+              setEditBoard(false);
+            }}
+            className="rounded-[20px] bg-primary w-full text-center h-[40px] items-center flex justify-center mt-6 cursor-pointer"
+          >
+            <p className="text-white font-bold text-[13px]">Edit Board</p>
           </div>
         </div>
       </div>

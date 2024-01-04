@@ -19,7 +19,9 @@ export default function ThemeProvider({
   const themeClass = theme === "light" ? lightTheme : darkTheme;
 
   return (
-    <body className={cn(`flex h-[100svh] ${font}`, themeClass)}>
+    <body
+      className={cn(`flex h-[100svh] transition-colors ${font}`, themeClass)}
+    >
       {children}
     </body>
   );
