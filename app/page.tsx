@@ -1,9 +1,10 @@
 "use client";
 
+import Board from "@/components/Board";
+import createNewTask from "@/components/CreateNewTask";
 import { colors } from "@/constants";
-import { getRandomIndex } from "@/lib/getRandomIndex";
 import { useBoardStore, useCurrentBoardStore, useMenuStore } from "@/store";
-import { color } from "framer-motion";
+import { Board as TBoard } from "@/types";
 import { useEffect, useState } from "react";
 import { useStore } from "zustand";
 
@@ -15,6 +16,7 @@ export default function Home() {
   );
   const currentBoard = boards.find((board) => board.id === currentBoardId);
   const isOpen = useStore(useMenuStore, (state) => state.isOpen);
+  const toggleEditing = useStore(useMenuStore, (state) => state.toggleEditing);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -39,8 +41,11 @@ export default function Home() {
         <p className="text-[18px] font-bold text-gray-300">
           This board is empty. Create a new column to get started.
         </p>
-        <button className="bg-primary hover:bg-primary-foreground transition-colors w-max px-[18px] h-[48px] rounded-[24px] flex justify-center items-center">
-          <p className="text-white font-bold">+ Add New Column</p>
+        <button
+          onClick={toggleEditing}
+          className="bg-primary hover:bg-primary-foreground transition-colors w-max px-[18px] h-[48px] rounded-[24px] flex justify-center items-center text-white font-bold"
+        >
+          + Add New Column
         </button>
       </main>
     );
@@ -48,35 +53,11 @@ export default function Home() {
 
   return (
     <main
-      className={`overflow-auto flex h-[calc(100svh-96px)] gap-6 ${
+      className={`overflow-auto flex h-[calc(100svh-96px)] gap-6 p-6 ${
         isOpen ? "w-[calc(100svw-300px)]" : "w-[100svw]"
       }`}
     >
-      {currentBoard?.columns.map((column, index) => {
-        function adjustNumber(max: number, num: number) {
-          while (num >= max) {
-            num = Math.floor(num / 2);
-          }
-          return num;
-        }
-
-        const randomIndex = adjustNumber(colors.length, index);
-
-        return (
-          <section className="min-w-[280px]">
-            <div className="flex items-center gap-3">
-              <div
-                className="w-[15px] h-[15px] rounded-full"
-                
-                style={{ background: colors[randomIndex] }}
-              />
-              <h2 className="uppercase font-bold text-gray-300 tracking-[2.4px]">
-                {column.name}
-              </h2>
-            </div>
-          </section>
-        );
-      })}
+      <Board currentBoard={currentBoard} />
     </main>
   );
 }

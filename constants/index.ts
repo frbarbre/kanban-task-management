@@ -8,3 +8,9 @@ export const colors = [
   "#6BD97B",
   "#D96BD9",
 ];
+
+export const placeholderSubtasks = [
+  "e.g. Make coffee",
+  "e.g. Drink coffee & smile",
+  "e.g. Repeat",
+];

@@ -1,14 +1,8 @@
 "use client";
 
+import { BoardStore, MenuStore, ThemeStore, currentBoardStore } from "@/types";
 import { persist } from "zustand/middleware";
 import { createWithEqualityFn } from "zustand/traditional";
-
-type Theme = "light" | "dark";
-
-interface ThemeStore {
-  theme: Theme;
-  changeTheme: () => void;
-}
 
 export const useThemeStore = createWithEqualityFn<ThemeStore>()(
   persist(
@@ -23,49 +17,20 @@ export const useThemeStore = createWithEqualityFn<ThemeStore>()(
   )
 );
 
-interface MenuStore {
-  isOpen: boolean;
-  toggleMenu: () => void;
-}
-
 export const useMenuStore = createWithEqualityFn<MenuStore>()(
   persist(
     (set, get): MenuStore => ({
       isOpen: true,
       toggleMenu: () => set({ isOpen: !get().isOpen }),
+      isEditing: false,
+      setEditing: (isEditing) => set({ isEditing: isEditing }),
+      toggleEditing: () => set({ isEditing: !get().isEditing }),
     }),
     {
       name: "menu-storage",
     }
   )
 );
-
-type Board = {
-  name: string;
-  id: string;
-  columns: { name: string; id: string }[] | [];
-  tasks:
-    | {
-        name: string;
-        description: string;
-        status: string;
-        subtasks:
-          | {
-              name: string;
-              isDone: Boolean;
-            }[]
-          | [];
-      }
-    | [];
-};
-
-interface BoardStore {
-  boards: Board[];
-  addBoard: (name: string, columns?: string[]) => void;
-  removeBoard: (id: string) => void;
-  addColumn: (name: string, id: string) => void;
-  editBoard: (id: string, name: string, columns: string[]) => void;
-}
 
 export const useBoardStore = createWithEqualityFn<BoardStore>()(
   persist(
@@ -121,6 +86,28 @@ export const useBoardStore = createWithEqualityFn<BoardStore>()(
             return board;
           }),
         })),
+      addTask: (name, description, status, subtasks, id) =>
+        set((state) => ({
+          boards: state.boards.map((board) => {
+            if (board.id === id) {
+              return {
+                ...board,
+                tasks: [
+                  ...board.tasks,
+                  {
+                    name: name,
+                    description: description,
+                    status: status,
+                    subtasks: subtasks.map((subtask) => {
+                      return { name: subtask, isDone: false };
+                    }),
+                  },
+                ],
+              };
+            }
+            return board;
+          }),
+        })),
     }),
 
     {
@@ -128,12 +115,6 @@ export const useBoardStore = createWithEqualityFn<BoardStore>()(
     }
   )
 );
-
-interface currentBoardStore {
-  currentBoardId: string | null;
-  setCurrentBoardId: (id: string | null) => void;
-  resetCurrentBoard: () => void;
-}
 
 export const useCurrentBoardStore = createWithEqualityFn<currentBoardStore>()(
   persist(
