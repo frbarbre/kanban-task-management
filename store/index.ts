@@ -1,6 +1,12 @@
 "use client";
 
-import { BoardStore, MenuStore, ThemeStore, currentBoardStore } from "@/types";
+import {
+  BoardStore,
+  MenuStore,
+  ThemeStore,
+  currentBoardStore,
+  currentTaskStore,
+} from "@/types";
 import { persist } from "zustand/middleware";
 import { createWithEqualityFn } from "zustand/traditional";
 
@@ -96,16 +102,102 @@ export const useBoardStore = createWithEqualityFn<BoardStore>()(
                   ...board.tasks,
                   {
                     name: name,
+                    id: crypto.randomUUID(),
                     description: description,
                     status: status,
+                    lastDragged: new Date().getTime(),
                     subtasks: subtasks.map((subtask) => {
-                      return { name: subtask, isDone: false };
+                      return {
+                        name: subtask,
+                        isDone: false,
+                        id: crypto.randomUUID(),
+                      };
                     }),
                   },
                 ],
               };
             }
             return board;
+          }),
+        })),
+      removeTask: (id) =>
+        set({
+          boards: get().boards.map((board) => {
+            return {
+              ...board,
+              tasks: board.tasks.filter((task) => task.id !== id),
+            };
+          }),
+        }),
+      changeStatus: (id, status) =>
+        set((state) => ({
+          boards: state.boards.map((board) => {
+            return {
+              ...board,
+              tasks: board.tasks.map((task) => {
+                if (task.id === id) {
+                  return {
+                    ...task,
+                    status: status,
+                    lastDragged: new Date().getTime(),
+                  };
+                }
+                return task;
+              }),
+            };
+          }),
+        })),
+      changeSubtaskStatus: (id, subtaskId) =>
+        set((state) => ({
+          boards: state.boards.map((board) => {
+            return {
+              ...board,
+              tasks: board.tasks.map((task) => {
+                if (task.id === id) {
+                  return {
+                    ...task,
+                    subtasks: task.subtasks.map((subtask) => {
+                      if (subtask.id === subtaskId) {
+                        return {
+                          ...subtask,
+                          isDone: !subtask.isDone,
+                        };
+                      }
+                      return subtask;
+                    }),
+                  };
+                }
+                return task;
+              }),
+            };
+          }),
+        })),
+      editTask: (id, name, description, subtasks, status) =>
+        set((state) => ({
+          boards: state.boards.map((board) => {
+            return {
+              ...board,
+              tasks: board.tasks.map((task) => {
+                if (task.id === id) {
+                  return {
+                    ...task,
+                    name: name,
+                    description: description,
+                    status: status,
+                    subtasks: Array.isArray(subtasks)
+                      ? subtasks.map((subtask: string) => {
+                          return {
+                            name: subtask,
+                            isDone: false,
+                            id: crypto.randomUUID(),
+                          };
+                        })
+                      : [],
+                  };
+                }
+                return task;
+              }),
+            };
           }),
         })),
     }),
@@ -125,6 +217,19 @@ export const useCurrentBoardStore = createWithEqualityFn<currentBoardStore>()(
     }),
     {
       name: "current-board-storage",
+    }
+  )
+);
+
+export const useCurrentTaskStore = createWithEqualityFn<currentTaskStore>()(
+  persist(
+    (set): currentTaskStore => ({
+      currentTaskId: null,
+      setCurrentTaskId: (id) => set({ currentTaskId: id }),
+      resetCurrentTask: () => set({ currentTaskId: null }),
+    }),
+    {
+      name: "current-task-storage",
     }
   )
 );

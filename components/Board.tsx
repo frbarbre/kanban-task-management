@@ -1,23 +1,12 @@
-import { colors } from "@/constants";
 import Column from "./Column";
-import { Board as TBoard } from "@/types";
+import { ReformatedColums } from "@/types";
 
 interface BoardProps {
-  currentBoard?: TBoard;
+  columns?: ReformatedColums[];
 }
 
-export default function Board({ currentBoard }: BoardProps) {
-  return currentBoard?.columns.map((column, index) => {
-    function adjustNumber(max: number, num: number) {
-      return num % max;
-    }
-
-    const color = adjustNumber(colors.length, index);
-
-    const tasks = currentBoard?.tasks.filter(
-      (task) => task.status === column.name
-    );
-
-    return <Column color={color} column={column} tasks={tasks} key={index} />;
+export default function Board({ columns }: BoardProps) {
+  return columns?.map((column, index) => {
+    return <Column column={column} key={index} index={index} />;
   });
 }

@@ -1,25 +1,45 @@
 import { placeholderSubtasks } from "@/constants";
-import { useBoardStore, useThemeStore } from "@/store";
+import {
+  useBoardStore,
+  useCurrentBoardStore,
+  useCurrentTaskStore,
+  useThemeStore,
+} from "@/store";
 import useStore from "@/store/useStore";
 import { AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useState } from "react";
 import Modal from "./Modal";
+import { useEffect } from "react";
 
-interface createNewTaskProps {
-  setNewTask: (newTask: boolean) => void;
-  currentId: string;
+interface EditTaskProps {
+  setIsEditing: (arg: boolean) => void;
   currentStatus: string[];
+  setViewTask: (arg: boolean) => void;
 }
 
-export default function createNewTask({
-  setNewTask,
-  currentId,
+export default function EditTask({
+  setIsEditing,
   currentStatus,
-}: createNewTaskProps) {
+  setViewTask,
+}: EditTaskProps) {
   const theme = useStore(useThemeStore, (state) => state.theme);
-  const addTask = useBoardStore((state) => state.addTask);
+  const editTask = useBoardStore((state) => state.editTask);
 
+  const boards = useStore(useBoardStore, (state) => state.boards);
+  const currentTaskId = useStore(
+    useCurrentTaskStore,
+    (state) => state.currentTaskId
+  );
+  const currentBoardId = useStore(
+    useCurrentBoardStore,
+    (state) => state.currentBoardId
+  );
+
+  const currentBoard = boards?.find((board) => board.id === currentBoardId);
+  const currentTask = currentBoard?.tasks.find(
+    (task) => task.id === currentTaskId
+  );
   type Status = (typeof currentStatus)[number];
 
   interface TForm {
@@ -29,12 +49,22 @@ export default function createNewTask({
     subtasks: string[] | [];
   }
 
+  console.log(currentTask);
   const [form, setForm] = useState<TForm>({
-    title: "",
-    description: "",
-    status: currentStatus[0] || "",
-    subtasks: [],
+    title: currentTask?.name || "",
+    description: currentTask?.description || "",
+    status: currentTask?.status || "",
+    subtasks: currentTask?.subtasks.map((subtask) => subtask.name) || [],
   });
+
+  useEffect(() => {
+    setForm({
+      title: currentTask?.name || "",
+      description: currentTask?.description || "",
+      status: currentTask?.status || "",
+      subtasks: currentTask?.subtasks.map((subtask) => subtask.name) || [],
+    });
+  }, [currentBoard]);
 
   const [formErrors, setFormErrors] = useState<{
     title: boolean;
@@ -46,7 +76,7 @@ export default function createNewTask({
 
   const [isStatusOpen, setIsStatusOpen] = useState(false);
 
-  const [isValidated, setValidated] = useState(false);
+  const [isValidated, setValidated] = useState(true);
 
   const handleAddSubtask = () => {
     setForm((prev) => ({
@@ -81,29 +111,34 @@ export default function createNewTask({
       setFormErrors((prev) => ({ ...prev, description: true }));
     }
 
-    if (isValidated) {
-      addTask(
+    if (isValidated && currentTaskId) {
+      editTask(
+        currentTaskId,
         form.title,
         form.description,
-        form.status,
         form.subtasks,
-        currentId
+        form.status
       );
-      setNewTask(false);
+      setIsEditing(false);
     }
   };
-  console.log(currentStatus);
+
+  console.log(form);
   return (
-    <Modal setIsModalOpen={setNewTask}>
+    <Modal setIsModalOpen={setIsEditing}>
       <Image
         src="/icon-cross.svg"
         width={20}
         height={20}
         alt="cross"
         className="absolute top-[20px] right-[20px] cursor-pointer"
-        onClick={() => setNewTask(false)}
+        onClick={() => {
+          setIsEditing(false);
+          setViewTask(true);
+        }}
       />
-      <h3 className="font-bold text-[18px]">Add New Task</h3>
+
+      <h3 className="font-bold text-[18px]">Edit Task</h3>
       <label
         htmlFor="title"
         className="font-bold text-[12px] text-gray-300 pb-2 pt-4 block"
@@ -113,7 +148,7 @@ export default function createNewTask({
       <input
         name="title"
         type="text"
-        placeholder="e.g Take coffee break"
+        defaultValue={currentTask?.name}
         onChange={(e) => {
           setForm((prev) => ({ ...prev, title: e.target.value }));
           if (form.title !== "" && form.description !== "") {
@@ -132,6 +167,7 @@ export default function createNewTask({
             : "bg-gray-500 border-gray-400"
         } border  rounded-[6px] w-full h-[40px] px-4 py-2 text-[13px] font-medium`}
       />
+
       {formErrors.title && (
         <p className="text-destructive font-medium pt-2 text-[12px]">
           A title is required
@@ -145,8 +181,7 @@ export default function createNewTask({
       </label>
       <textarea
         name="description"
-        placeholder="e.g. It’s always good to take a break. This 15 minute break will 
-          recharge the batteries a little."
+        defaultValue={currentTask?.description}
         onChange={(e) => {
           setForm((prev) => ({ ...prev, description: e.target.value }));
           if (form.title !== "" && form.description !== "") {
@@ -255,7 +290,7 @@ export default function createNewTask({
         onClick={handleSubmit}
         className="rounded-full bg-primary text-white w-full h-10 font-bold text-[13px] mt-6 hover:opacity-80 transition-opacity"
       >
-        Create Task
+        Edit Task
       </button>
     </Modal>
   );
