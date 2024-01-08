@@ -11,6 +11,9 @@ export interface MenuStore {
   isEditing: boolean;
   setEditing: (isEditing: boolean) => void;
   toggleEditing: () => void;
+  createBoard: boolean;
+  setCreateBoard: (createBoard: boolean) => void;
+  toggleCreateBoard: () => void;
 }
 
 export type Board = {

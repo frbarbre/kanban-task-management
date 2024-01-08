@@ -1,11 +1,17 @@
-import { useBoardStore, useCurrentBoardStore, useThemeStore } from "@/store";
+import {
+  useBoardStore,
+  useCurrentBoardStore,
+  useMenuStore,
+  useThemeStore,
+} from "@/store";
 import useStore from "@/store/useStore";
 import { useState } from "react";
 import Image from "next/image";
 import CreateNewBoard from "./CreateNewBoard";
 import { AnimatePresence, motion as m } from "framer-motion";
 export default function AllBoards() {
-  const [createBoard, setCreateBoard] = useState(false);
+  const createBoard = useStore(useMenuStore, (state) => state.createBoard);
+  const setCreateBoard = useMenuStore((state) => state.setCreateBoard);
   const boards = useStore(useBoardStore, (state) => state.boards);
   const [isHovered, setIsHovered] = useState<string | null>(null);
   const currentBoardId = useStore(

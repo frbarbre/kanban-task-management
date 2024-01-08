@@ -31,6 +31,9 @@ export const useMenuStore = createWithEqualityFn<MenuStore>()(
       isEditing: false,
       setEditing: (isEditing) => set({ isEditing: isEditing }),
       toggleEditing: () => set({ isEditing: !get().isEditing }),
+      createBoard: false,
+      setCreateBoard: (createBoard) => set({ createBoard: createBoard }),
+      toggleCreateBoard: () => set({ createBoard: !get().createBoard }),
     }),
     {
       name: "menu-storage",

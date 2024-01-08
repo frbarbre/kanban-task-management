@@ -17,6 +17,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { ReformatedColums, Board as TBoard } from "@/types";
+import CreateNewBoard from "@/components/CreateNewBoard";
 
 export default function Home() {
   const theme = useStore(useThemeStore, (state) => state.theme);
@@ -31,6 +32,12 @@ export default function Home() {
     reformattedColumns(currentBoard!)
   );
   const toggleEditing = useStore(useMenuStore, (state) => state.toggleEditing);
+  const toggleCreateBoard = useStore(
+    useMenuStore,
+    (state) => state.toggleCreateBoard
+  );
+  const createBoard = useStore(useMenuStore, (state) => state.createBoard);
+  const setCreateBoard = useMenuStore((state) => state.setCreateBoard);
   const [isClient, setIsClient] = useState(false);
   const changeStatus = useBoardStore((state) => state.changeStatus);
 
@@ -80,9 +87,18 @@ export default function Home() {
   if (!currentBoard) {
     return (
       <main className="flex items-center flex-col justify-center w-full h-[calc(100svh-96px)] gap-8">
-        <p className="text-[18px] font-bold text-gray-300">
+        <p className="text-[18px] text-center font-bold text-gray-300 px-4">
           You currently haven't selected any board, either select or create one.
         </p>
+        <button
+          onClick={toggleCreateBoard}
+          className="bg-primary hover:bg-primary-foreground transition-colors w-max px-[18px] h-[48px] rounded-[24px] flex justify-center items-center text-white font-bold"
+        >
+          + Add New Board
+        </button>
+        {createBoard ? (
+          <CreateNewBoard setCreateBoard={setCreateBoard} />
+        ) : null}
       </main>
     );
   }
@@ -90,7 +106,7 @@ export default function Home() {
   if (currentBoard?.columns.length === 0) {
     return (
       <main className="flex items-center flex-col justify-center w-full h-[calc(100svh-96px)] gap-8">
-        <p className="text-[18px] font-bold text-gray-300">
+        <p className="text-[18px] text-center font-bold text-gray-300 px-4">
           This board is empty. Create a new column to get started.
         </p>
         <button
@@ -105,8 +121,8 @@ export default function Home() {
 
   return (
     <main
-      className={`overflow-auto flex h-[calc(100svh-96px)] gap-6 p-6 ${
-        isOpen ? "w-[calc(100svw-300px)]" : "w-[100svw]"
+      className={`overflow-auto flex h-[calc(100svh-96px)] gap-6 p-6 w-[100svw] ${
+        isOpen ? "sm:w-[calc(100svw-300px)]" : "sm:w-[100svw]"
       }`}
     >
       <DndContext onDragEnd={handleDragEnd} sensors={sensors}>

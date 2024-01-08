@@ -85,10 +85,9 @@ export default function createNewTask({
                   setIsEditing(!isEditing);
                   setIsDropdownOpen(false);
                   setViewTask(!viewTask);
-
                 }}
               >
-                Edit Board
+                Edit Task
               </p>
               <p
                 className="text-destructive font-medium cursor-pointer"
@@ -109,32 +108,65 @@ export default function createNewTask({
       <p className="text-[13px] text-gray-300 leading-[23px] py-6 font-medium">
         {currentTask?.description}
       </p>
-      <p className="text-[12px] font-bold text-gray-300 pb-4">
+      <p
+        className={`text-[12px] font-bold ${
+          theme === "light" ? "text-gray-300" : "text-white"
+        } pb-4`}
+      >
         Subtasks ({numDone} of {currentTask?.subtasks?.length})
       </p>
-      {currentTask?.subtasks?.length !== 0 ? (
-        currentTask?.subtasks.map((subtask) => {
-          return (
-            <div className="flex items-center">
-              <label className="text-[14px]">
-                <input
-                  defaultChecked={subtask.isDone}
-                  name={subtask.id}
-                  type="checkbox"
-                  className="mr-2 checked:bg-primary checked:border-transparent"
-                  onClick={() =>
-                    changeSubtaskStatus(currentTask.id, subtask.id)
-                  }
-                />
-                {subtask.name}
+      <article className="flex flex-col gap-2 mb-6">
+        {currentTask?.subtasks?.length !== 0 ? (
+          currentTask?.subtasks.map((subtask) => {
+            return (
+              <label className="text-[12px] font-bold hover:opacity-80 transition-opacity">
+                <div
+                  className={`flex items-center p-3 rounded-sm relative ${
+                    subtask.isDone ? "text-gray-300 line-through" : ""
+                  } ${theme === "light" ? "bg-gray-100" : "bg-gray-600"}`}
+                >
+                  <input
+                    defaultChecked={subtask.isDone}
+                    name={subtask.id}
+                    type="checkbox"
+                    className={`mr-3 checked:bg-primary ${
+                      theme === "light" ? "bg-white" : "bg-gray-500"
+                    } rounded-[2px] checked:border-transparent border-white appearance-none w-4 h-4 -translate-y-[1px]`}
+                    onClick={() =>
+                      changeSubtaskStatus(currentTask.id, subtask.id)
+                    }
+                  />
+                  {subtask.name}
+                  {subtask.isDone && (
+                    <svg
+                      width="10"
+                      height="8"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="absolute left-[15px]"
+                    >
+                      <path
+                        stroke="#FFF"
+                        stroke-width="2"
+                        fill="none"
+                        d="m1.276 3.066 2.756 2.756 5-5"
+                      />
+                    </svg>
+                  )}
+                </div>
               </label>
-            </div>
-          );
-        })
-      ) : (
-        <p className="text-[14px] text-gray-500">No subtasks</p>
-      )}
-      <p>Current Status</p>
+            );
+          })
+        ) : (
+          <p className="text-[14px] text-gray-500">No subtasks</p>
+        )}
+      </article>
+      <p
+        className={`text-[12px] font-bold ${
+          theme === "light" ? "text-gray-300" : "text-white"
+        } pb-2`}
+      >
+        Current Status
+      </p>
       <div
         aria-label="status"
         onClick={() => setIsStatusOpen(!isStatusOpen)}

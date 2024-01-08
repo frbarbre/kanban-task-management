@@ -33,7 +33,7 @@ export default function Column({ column, index }: ColumnProps) {
   });
 
   const style = {
-    color: isOver ? "green" : undefined,
+    opacity: isOver ? "80%" : undefined,
   };
 
   const sortedTasks = column.tasks?.sort(

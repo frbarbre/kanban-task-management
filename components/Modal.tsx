@@ -16,7 +16,7 @@ export default function Modal({ setIsModalOpen, children }: ModalProps) {
         animate={{ opacity: 1, scale: 1 }}
         className={`${
           theme === "light" ? "bg-white" : "bg-gray-500"
-        } w-[500px] rounded-[6px] p-8 z-20 relative`}
+        } w-[95%] md:w-[500px] rounded-[6px] p-8 z-20 relative`}
       >
         {children}
       </m.div>
